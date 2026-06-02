@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Result } from './entity/result.entity';
 import { Repository } from 'typeorm';
+import { Result } from './entity/result.entity';
 import { SubjectResult } from './entity/subject-result.entity';
 import { Subject } from './entity/subject.entity';
 import { CreateResultDto } from './dto/create-result.dto';
+import { UpdateResultDto } from './dto/update-result.dto';
 
 @Injectable()
 export class ResultService {
@@ -43,7 +44,7 @@ export class ResultService {
     return result;
   }
 
-  async getResult(studentId: number) {
+  async getResultByStudentId(studentId: number) {
     const result = await this.resultRepository.findOne({
       where: {
         studentId,
@@ -54,6 +55,73 @@ export class ResultService {
         },
       },
     });
+    if (!result) throw new NotFoundException('Student not found');
     return result;
+  }
+
+  async getAllResults() {
+    return this.resultRepository.find({
+      relations: {
+        subjectResults: {
+          subject: true,
+        },
+      },
+    });
+  }
+
+  async updateResult(resultId: number, dto: UpdateResultDto) {
+    const result = await this.resultRepository.findOne({
+      where: {
+        resultId,
+      },
+    });
+
+    if (!result) {
+      throw new NotFoundException('Result not found');
+    }
+
+    await this.subjectResultRepository.delete({
+      result: {
+        resultId,
+      },
+    });
+
+    for (const subjectData of dto.subjects) {
+      let subject = await this.subjectRepository.findOne({
+        where: {
+          subjectName: subjectData.subjectName,
+        },
+      });
+      if (!subject) {
+        subject = await this.subjectRepository.save({
+          subjectName: subjectData.subjectName,
+        });
+      }
+      await this.subjectResultRepository.save({
+        result,
+        subject,
+        obtainedMarks: subjectData.obtainedMarks,
+        totalMarks: subjectData.totalMarks,
+      });
+    }
+    return this.getResultByStudentId(result.studentId);
+  }
+
+  async deleteResult(resultId: number) {
+    const result = await this.resultRepository.findOne({
+      where: {
+        resultId,
+      },
+    });
+
+    if (!result) {
+      throw new NotFoundException('Result not found');
+    }
+
+    await this.resultRepository.delete(resultId);
+
+    return {
+      message: 'Result deleted successfully',
+    };
   }
 }
