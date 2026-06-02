@@ -5,9 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Result } from './entity/result.entity';
 import { Subject } from './entity/subject.entity';
 import { SubjectResult } from './entity/subject-result.entity';
+import { UserClientModule } from 'src/user-client/user-client.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Result, Subject, SubjectResult])],
+  imports: [
+    TypeOrmModule.forFeature([Result, Subject, SubjectResult]),
+    UserClientModule,
+  ],
   providers: [ResultService],
   controllers: [ResultController],
 })

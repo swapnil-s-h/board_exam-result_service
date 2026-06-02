@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Result } from './entity/result.entity';
@@ -6,6 +11,8 @@ import { SubjectResult } from './entity/subject-result.entity';
 import { Subject } from './entity/subject.entity';
 import { CreateResultDto } from './dto/create-result.dto';
 import { UpdateResultDto } from './dto/update-result.dto';
+import { UserClientService } from 'src/user-client/user-client.service';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Injectable()
 export class ResultService {
@@ -16,9 +23,25 @@ export class ResultService {
     private readonly subjectResultRepository: Repository<SubjectResult>,
     @InjectRepository(Subject)
     private readonly subjectRepository: Repository<Subject>,
+    private readonly userClientService: UserClientService,
   ) {}
 
   async createResult(dto: CreateResultDto) {
+    const user = await this.userClientService.getUserById(dto.studentId);
+    console.log(user);
+    if (user.data.role !== Role.student) {
+      throw new BadRequestException('Result can only be assigned to a student');
+    }
+
+    const existingResult = await this.resultRepository.findOne({
+      where: {
+        studentId: dto.studentId,
+      },
+    });
+    if (existingResult) {
+      throw new ConflictException('Result already exists for this student');
+    }
+
     const result = await this.resultRepository.save({
       studentId: dto.studentId,
     });
