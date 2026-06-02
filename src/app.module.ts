@@ -11,11 +11,29 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { JwtStrategy } from './auth/strategies/jwt.strategy';
 import { ConfigModule } from '@nestjs/config';
+import { MessagingModule } from './messaging/messaging.module';
+import Joi from 'joi';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      expandVariables: true,
+      validationSchema: Joi.object({
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.string().required(),
+        DB_USERNAME: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        INTERNAL_API_KEY: Joi.string().required(),
+        USER_SERVICE_URL: Joi.string().required(),
+        RABBITMQ_URL: Joi.string().required(),
+        RESULT_QUEUE: Joi.string().required(),
+        PORT: Joi.number().default(3002),
+        JWT_SECRET: Joi.string().required(),
+        JWT_EXPIRY: Joi.string().required(),
+        REFRESH_TOKEN_EXPIRY: Joi.string().required(),
+      }),
     }),
     ResultModule,
     UserClientModule,
@@ -30,6 +48,7 @@ import { ConfigModule } from '@nestjs/config';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    MessagingModule,
   ],
   controllers: [AppController],
   providers: [
@@ -40,6 +59,7 @@ import { ConfigModule } from '@nestjs/config';
   ],
 })
 export class AppModule {
+  /*
   constructor(private dataSource: DataSource) {
     console.log(`data source ${dataSource.driver.database}`);
     console.log(
@@ -62,4 +82,5 @@ export class AppModule {
     );
     console.log(`PORT ${process.env.PORT} ${typeof process.env.PORT}`);
   }
+  */
 }

@@ -41,7 +41,7 @@ export class ResultController {
   @Get('me')
   @Roles(Role.student)
   getMyResult(@GetUser() user: JwtPayload) {
-    return this.resultService.getResultByStudentId(user.sub);
+    return this.resultService.getMyResult(user.sub);
   }
 
   @Put(':id')

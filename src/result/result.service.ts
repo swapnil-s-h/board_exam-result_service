@@ -13,6 +13,7 @@ import { CreateResultDto } from './dto/create-result.dto';
 import { UpdateResultDto } from './dto/update-result.dto';
 import { UserClientService } from 'src/user-client/user-client.service';
 import { Role } from 'src/auth/enums/role.enum';
+import { MessagingService } from 'src/messaging/messaging.service';
 
 @Injectable()
 export class ResultService {
@@ -24,6 +25,7 @@ export class ResultService {
     @InjectRepository(Subject)
     private readonly subjectRepository: Repository<Subject>,
     private readonly userClientService: UserClientService,
+    private readonly messagingService: MessagingService,
   ) {}
 
   async createResult(dto: CreateResultDto) {
@@ -64,6 +66,16 @@ export class ResultService {
         totalMarks: subjectData.totalMarks,
       });
     }
+    return result;
+  }
+
+  async getMyResult(studentId: number) {
+    const result = await this.getResultByStudentId(studentId);
+    await this.messagingService.publishResultViewed({
+      studentId,
+      resultId: result.resultId,
+      viewedAt: new Date().toISOString(),
+    });
     return result;
   }
 
