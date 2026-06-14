@@ -30,7 +30,6 @@ export class ResultService {
 
   async createResult(dto: CreateResultDto) {
     const user = await this.userClientService.getUserById(dto.studentId);
-    console.log(user);
     if (user.data.role !== Role.student) {
       throw new BadRequestException('Result can only be assigned to a student');
     }

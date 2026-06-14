@@ -9,9 +9,6 @@ export class UserClientService {
 
   async getUserById(userId: number) {
     try {
-      console.log(process.env.USER_SERVICE_URL);
-      console.log(process.env.INTERNAL_API_KEY);
-      console.log(userId);
       const response = await firstValueFrom(
         this.httpService.get(
           `${process.env.USER_SERVICE_URL}/internal/users/${userId}`,
