@@ -33,8 +33,6 @@ import Joi from 'joi';
         RESULT_QUEUE: Joi.string().required(),
         PORT: Joi.number().default(3002),
         JWT_SECRET: Joi.string().required(),
-        JWT_EXPIRY: Joi.string().required(),
-        REFRESH_TOKEN_EXPIRY: Joi.string().required(),
       }),
     }),
     ResultModule,
